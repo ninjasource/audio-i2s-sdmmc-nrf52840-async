@@ -1,0 +1,11 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+# replace nRF82840_xxAA with your chip as listed in `probe-run --list-chips`
+runner = "probe-run --chip nRF52840_xxAA"
+
+[build]
+target = "thumbv7em-none-eabihf"
+# target = "thumbv8m.main-none-eabihf" # = ARM Cortex-M33
+
+[env]
+DEFMT_LOG = "info"
+# RUST_LOG = "info"
