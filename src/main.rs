@@ -14,11 +14,11 @@ use embassy_nrf::peripherals::{P0_06, SPI3};
 use embassy_nrf::spim::Spim;
 use embassy_nrf::{interrupt, spim};
 use embassy_time::{Duration, Instant, Timer};
+use embedded_sdmmc_async as sd;
 use lc3_codec::common::complex::Complex;
 use lc3_codec::common::config::{FrameDuration, SamplingFrequency};
 use lc3_codec::decoder::lc3_decoder::Lc3Decoder;
 use {defmt_rtt as _, panic_probe as _};
-use embedded_sdmmc_async as sd;
 
 const AUDIO_FRAME_BYTES_LEN: usize = NUM_SAMPLES * mem::size_of::<Sample>();
 const BB_BYTES_LEN: usize = AUDIO_FRAME_BYTES_LEN * 6;
@@ -31,7 +31,6 @@ const FILE_FRAME_LEN: usize = 150;
 
 mod file_reader;
 use file_reader::FileReader;
-
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
@@ -51,13 +50,14 @@ async fn main(spawner: Spawner) {
     let master_clock: MasterClock = i2s::ApproxSampleRate::_48000.into();
     let sample_rate = master_clock.sample_rate();
     info!("Sample rate: {}", sample_rate);
-    let config = Config::default()
-        .sample_width(SampleWidth::_16bit)
-        .channels(Channels::MonoLeft);
+    let mut config = Config::default();
+    config.sample_width = SampleWidth::_16bit;
+    config.channels = Channels::MonoLeft;
     let irq = interrupt::take!(I2S);
     let buffers = DoubleBuffering::<Sample, NUM_SAMPLES>::new();
     let mut output_stream =
-        I2S::master(p.I2S, irq, p.P0_28, p.P0_29, p.P0_31, master_clock, config).output(p.P0_30, buffers);
+        I2S::master(p.I2S, irq, p.P0_28, p.P0_29, p.P0_31, master_clock, config)
+            .output(p.P0_30, buffers);
     output_stream.start().await.expect("I2S Start");
 
     loop {
@@ -106,11 +106,15 @@ async fn reader(
     const FREQ: SamplingFrequency = SamplingFrequency::Hz48000;
     const DURATION: FrameDuration = FrameDuration::TenMs;
     // TODO: upgrade to use heapless pool for buffers (this is horrible)
-    const SCALER_COMPLEX_LENS: (usize, usize) = Lc3Decoder::<NUM_CH>::calc_working_buffer_lengths(DURATION, FREQ);
+    const SCALER_COMPLEX_LENS: (usize, usize) =
+        Lc3Decoder::<NUM_CH>::calc_working_buffer_lengths(DURATION, FREQ);
     static mut SCALER_BUF: [f32; SCALER_COMPLEX_LENS.0] = [0.0; SCALER_COMPLEX_LENS.0];
-    static mut COMPLEX_BUF: [Complex; SCALER_COMPLEX_LENS.1] = [Complex { r: 0., i: 0. }; SCALER_COMPLEX_LENS.1];
+    static mut COMPLEX_BUF: [Complex; SCALER_COMPLEX_LENS.1] =
+        [Complex { r: 0., i: 0. }; SCALER_COMPLEX_LENS.1];
     let mut decoder =
-        Lc3Decoder::<NUM_CH>::new(DURATION, FREQ, unsafe { &mut SCALER_BUF }, unsafe { &mut COMPLEX_BUF });
+        Lc3Decoder::<NUM_CH>::new(DURATION, FREQ, unsafe { &mut SCALER_BUF }, unsafe {
+            &mut COMPLEX_BUF
+        });
 
     let mut dec_in_buffer = [0; FILE_FRAME_LEN];
     let mut dec_out_buffer = [0; NUM_SAMPLES];

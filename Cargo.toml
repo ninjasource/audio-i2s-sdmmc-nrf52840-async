@@ -12,9 +12,9 @@ defmt-rtt = "0.4"
 # embassy-executor = { version = "0.1.0", path = "../embassy/embassy-executor", features = ["defmt", "integrated-timers"] }
 # embassy-nrf = { version = "0.1.0", path = "../embassy/embassy-nrf", features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "nightly", "unstable-traits"] }
 # embassy-time = { version = "0.1.0", path = "../embassy/embassy-time", features = ["defmt", "defmt-timestamp-uptime"] }
-embassy-executor = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", rev = "dbf74937", features = ["defmt", "integrated-timers"] }
-embassy-nrf = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", rev = "dbf74937", features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "nightly", "unstable-traits"] }
-embassy-time = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", rev = "dbf74937", features = ["defmt", "defmt-timestamp-uptime"] }
+embassy-executor = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", features = ["defmt", "integrated-timers"] }
+embassy-nrf = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "nightly", "unstable-traits"] }
+embassy-time = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy.git", features = ["defmt", "defmt-timestamp-uptime"] }
 
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
